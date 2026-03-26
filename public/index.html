@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flight Price Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- Header -->
+    <header>
+      <h1>Flight Price Tracker</h1>
+    </header>
+
+    <!-- Add Tracker Form -->
+    <section class="card">
+      <h2>Add a New Tracker</h2>
+      <form id="tracker-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="origin">Origin (IATA)</label>
+            <input type="text" id="origin" placeholder="SAT" maxlength="3" required>
+          </div>
+          <div class="form-group">
+            <label for="destination">Destination (IATA)</label>
+            <input type="text" id="destination" placeholder="JFK" maxlength="3" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="depart-date">Depart Date</label>
+            <input type="date" id="depart-date" required>
+          </div>
+          <div class="form-group">
+            <label for="return-date">Return Date <span class="optional">(optional)</span></label>
+            <input type="date" id="return-date">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="adults">Passengers</label>
+            <input type="number" id="adults" value="1" min="1" max="9" required>
+          </div>
+          <div class="form-group">
+            <label for="threshold">Price Threshold (USD)</label>
+            <input type="number" id="threshold" placeholder="299.99" min="1" step="0.01" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="alert-type">Alert Type</label>
+            <select id="alert-type">
+              <option value="email">Email</option>
+              <option value="sms">SMS</option>
+              <option value="both">Both</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Add Tracker</button>
+        </div>
+
+        <p id="form-message" class="form-message"></p>
+      </form>
+    </section>
+
+    <!-- Controls -->
+    <section class="controls">
+      <h2>Active Trackers</h2>
+      <button class="btn btn-secondary" onclick="manualCheck()">Check Prices Now</button>
+    </section>
+
+    <!-- Tracker Cards -->
+    <div id="trackers-list"></div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

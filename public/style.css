@@ -1,0 +1,220 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #F8F8F6;
+  color: #1A1A1A;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  padding: 32px 16px 64px;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* Header */
+header {
+  margin-bottom: 32px;
+}
+
+header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+/* Card */
+.card {
+  background: #ffffff;
+  border: 1px solid #E5E5E3;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.card h2 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* Form */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+}
+
+.optional {
+  font-weight: 400;
+  color: #999;
+}
+
+input, select {
+  padding: 9px 12px;
+  border: 1px solid #DDDDD9;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #1A1A1A;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+input:focus, select:focus {
+  border-color: #2D6BE4;
+}
+
+input::placeholder {
+  color: #BABAB6;
+}
+
+.form-actions {
+  margin-top: 20px;
+}
+
+.form-message {
+  margin-top: 12px;
+  font-size: 13px;
+  min-height: 18px;
+}
+
+.form-message.success { color: #16a34a; }
+.form-message.error   { color: #dc2626; }
+
+/* Buttons */
+.btn {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn:hover { opacity: 0.85; }
+
+.btn-primary {
+  background: #2D6BE4;
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #1A1A1A;
+  color: #fff;
+}
+
+.btn-danger {
+  background: none;
+  border: 1px solid #E5E5E3;
+  color: #dc2626;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.btn-danger:hover {
+  background: #fef2f2;
+  opacity: 1;
+}
+
+/* Controls row */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.controls h2 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Tracker Cards */
+.tracker-card {
+  background: #ffffff;
+  border: 1px solid #E5E5E3;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.tracker-route {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  margin-bottom: 4px;
+}
+
+.tracker-meta {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 12px;
+}
+
+.tracker-price {
+  font-size: 22px;
+  font-weight: 700;
+  color: #2D6BE4;
+  margin-bottom: 2px;
+}
+
+.tracker-price-detail {
+  font-size: 13px;
+  color: #555;
+}
+
+.tracker-not-checked {
+  font-size: 14px;
+  color: #BABAB6;
+}
+
+.tracker-threshold {
+  font-size: 13px;
+  color: #999;
+  margin-top: 6px;
+}
+
+.tracker-actions {
+  flex-shrink: 0;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px 0;
+  color: #BABAB6;
+  font-size: 14px;
+}
+
+@media (max-width: 520px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
