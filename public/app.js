@@ -15,12 +15,12 @@ async function loadTrackers() {
       return;
     }
 
-    // Render cards, then fetch latest price for each
+    // Render all cards first, then fetch prices in parallel
     for (const query of json.data) {
       const card = renderCard(query, null);
       list.appendChild(card);
-      fetchLatestPrice(query);
     }
+    await Promise.all(json.data.map(query => fetchLatestPrice(query)));
 
   } catch (err) {
     list.innerHTML = '<p class="empty-state">Could not load trackers.</p>';
@@ -169,7 +169,7 @@ async function manualCheck() {
     const res  = await fetch(`${API}/jobs/run`, { method: 'POST' });
     const json = await res.json();
     if (json.success) {
-      loadTrackers();
+      await loadTrackers();
     }
   } catch (err) {
     alert('Could not trigger price check.');
