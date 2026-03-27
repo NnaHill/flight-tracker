@@ -85,7 +85,7 @@ function updateCardPrice(queryId, record) {
   const price    = parseFloat(record.price).toFixed(2);
   const airline  = record.airline  || '';
   const depTime  = record.checked_at
-    ? new Date(record.checked_at).toLocaleString('en-US', { month: 'short', day: 'numeric', timeStyle: 'short' })
+    ? new Date(record.checked_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
     : '';
 
   wrap.innerHTML = `
