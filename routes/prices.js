@@ -73,11 +73,13 @@ router.post('/check/:queryId', async (req, res) => {
       query.num_passengers
     );
 
-    if (!result) {
+    if (!result || result.length === 0) {
       return res.json({ success: false, error: 'No offers returned from Duffel for this query.' });
     }
 
-    await savePrice(queryId, result);
+    for (const offer of result) {
+      await savePrice(queryId, offer);
+    }
     res.json({ success: true, data: result });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

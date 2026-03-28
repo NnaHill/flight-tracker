@@ -44,11 +44,13 @@ async function runNow() {
 
     apiCallCount++;
 
-    if (!result) {
+    if (!result || result.length === 0) {
       console.warn(`  No offers returned for query ID: ${query.id} — skipping save and alert check.`);
     } else {
-      await savePrice(query.id, result);
-      await checkAndAlert(query, result);
+      for (const offer of result) {
+        await savePrice(query.id, offer);
+      }
+      await checkAndAlert(query, result[0]); // alert on cheapest
     }
 
     await sleep(2000);

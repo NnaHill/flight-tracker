@@ -36,9 +36,12 @@ async function fetchLatestPrice(query) {
 
     if (!json.success || json.data.length === 0) return;
 
-    // data is sorted DESC by checked_at — first item is most recent
-    const latest = json.data[0];
-    updateCardPrice(query.id, latest);
+    // Get all records from the most recent check (within 5 minutes of the latest)
+    const latestTime = new Date(json.data[0].checked_at).getTime();
+    const latestBatch = json.data.filter(r =>
+      latestTime - new Date(r.checked_at).getTime() < 5 * 60 * 1000
+    );
+    updateCardPrice(query.id, latestBatch);
   } catch (err) {
     // silently ignore — card already shows "Not yet checked"
   }
@@ -78,19 +81,25 @@ function renderCard(query, priceRecord) {
 
 // ─── Update a card's price section ───────────────────────────────────────────
 
-function updateCardPrice(queryId, record) {
+function updateCardPrice(queryId, records) {
   const wrap = document.getElementById(`price-${queryId}`);
   if (!wrap) return;
 
-  const price    = parseFloat(record.price).toFixed(2);
-  const airline  = record.airline  || '';
-  const depTime  = record.checked_at
-    ? new Date(record.checked_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+  const sorted  = [...records].sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+  const depTime = sorted[0].checked_at
+    ? new Date(sorted[0].checked_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
     : '';
 
+  const optionsHtml = sorted.map(r => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #f0f0f0;">
+      <span style="font-size:14px;color:#333;">${r.airline || 'Unknown'}</span>
+      <span style="font-size:18px;font-weight:700;color:#16a34a;">$${parseFloat(r.price).toFixed(2)} <span style="font-size:12px;font-weight:400;color:#555;">${r.currency || 'USD'}</span></span>
+    </div>
+  `).join('');
+
   wrap.innerHTML = `
-    <div class="tracker-price">$${price} <span style="font-size:14px;font-weight:400;color:#555;">${record.currency || 'USD'}</span></div>
-    <div class="tracker-price-detail">${airline}${depTime ? ' &nbsp;·&nbsp; checked ' + depTime : ''}</div>
+    ${optionsHtml}
+    <div style="font-size:12px;color:#888;margin-top:6px;">checked ${depTime}</div>
   `;
 }
 
