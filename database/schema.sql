@@ -50,14 +50,22 @@ CREATE TABLE search_queries (
 -- ============================================
 -- Table: price_history
 -- ============================================
+-- Migration for existing databases (run once):
+-- ALTER TABLE price_history ADD COLUMN airline_iata CHAR(3) DEFAULT NULL AFTER airline;
+-- ALTER TABLE price_history ADD COLUMN departure_time DATETIME DEFAULT NULL AFTER flight_number;
+-- ALTER TABLE price_history ADD COLUMN arrival_time   DATETIME DEFAULT NULL AFTER departure_time;
+
 CREATE TABLE price_history (
-  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  query_id      INT UNSIGNED   NOT NULL,
-  price         DECIMAL(10,2)  NOT NULL,
-  currency      CHAR(3)        NOT NULL DEFAULT 'USD',
-  airline       VARCHAR(100)   DEFAULT NULL,
-  flight_number VARCHAR(20)    DEFAULT NULL,
-  checked_at    TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  query_id       INT UNSIGNED   NOT NULL,
+  price          DECIMAL(10,2)  NOT NULL,
+  currency       CHAR(3)        NOT NULL DEFAULT 'USD',
+  airline        VARCHAR(100)   DEFAULT NULL,
+  airline_iata   CHAR(3)        DEFAULT NULL,
+  flight_number  VARCHAR(20)    DEFAULT NULL,
+  departure_time DATETIME       DEFAULT NULL,
+  arrival_time   DATETIME       DEFAULT NULL,
+  checked_at     TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   CONSTRAINT fk_ph_query
     FOREIGN KEY (query_id) REFERENCES search_queries(id)

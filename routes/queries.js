@@ -4,9 +4,8 @@ const {
   getAllActiveQueries,
   getQueryById,
   createQuery,
-  savePrice
+  updateQueryThreshold
 } = require('../db/queries');
-const { searchLowestPrice } = require('../services/flightService');
 
 // ─── Validation helpers ───────────────────────────────────────────────────────
 
@@ -100,6 +99,27 @@ router.post('/', async (req, res) => {
 
     const data = await getQueryById(insertId);
     res.status(201).json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─── PATCH /:id — update price threshold ─────────────────────────────────────
+
+router.patch('/:id', async (req, res) => {
+  const { id } = req.params;
+  const threshold = parseFloat(req.body.price_threshold);
+
+  if (isNaN(threshold) || threshold <= 0) {
+    return res.status(400).json({ success: false, error: 'price_threshold must be a positive number.' });
+  }
+
+  try {
+    const updated = await updateQueryThreshold(id, threshold);
+    if (!updated) {
+      return res.status(404).json({ success: false, error: `Query ID ${id} not found.` });
+    }
+    res.json({ success: true, data: { id: parseInt(id), price_threshold: threshold } });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

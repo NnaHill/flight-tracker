@@ -63,20 +63,37 @@ async function createQuery(queryData) {
 async function savePrice(queryId, priceData) {
   const {
     price,
-    currency = 'USD',
-    airline = null,
-    flight_number = null
+    currency      = 'USD',
+    airline       = null,
+    airlineIata   = null,
+    flight_number = null,
+    departureTime = null,
+    arrivalTime   = null
   } = priceData;
 
   try {
     const [result] = await pool.query(
-      `INSERT INTO price_history (query_id, price, currency, airline, flight_number)
-       VALUES (?, ?, ?, ?, ?)`,
-      [queryId, price, currency, airline, flight_number]
+      `INSERT INTO price_history
+         (query_id, price, currency, airline, airline_iata, flight_number, departure_time, arrival_time)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [queryId, price, currency, airline, airlineIata, flight_number, departureTime || null, arrivalTime || null]
     );
     return result.insertId;
   } catch (err) {
     console.error(`savePrice(queryId=${queryId}) error:`, err.message);
+    throw err;
+  }
+}
+
+async function updateQueryThreshold(id, price_threshold) {
+  try {
+    const [result] = await pool.query(
+      `UPDATE search_queries SET price_threshold = ? WHERE id = ? AND is_active = 1`,
+      [price_threshold, id]
+    );
+    return result.affectedRows > 0;
+  } catch (err) {
+    console.error(`updateQueryThreshold(${id}) error:`, err.message);
     throw err;
   }
 }
@@ -118,6 +135,7 @@ module.exports = {
   getQueryById,
   createQuery,
   savePrice,
+  updateQueryThreshold,
   getLowestPriceForQuery,
   logAlertSent
 };
