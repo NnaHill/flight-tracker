@@ -59,24 +59,35 @@ async function createQuery(queryData) {
 }
 
 // ─── Price History ────────────────────────────────────────────────────────────
+// NOTE: Requires migration on existing databases — see database/schema.sql
 
 async function savePrice(queryId, priceData) {
   const {
     price,
-    currency      = 'USD',
-    airline       = null,
-    airlineIata   = null,
-    flight_number = null,
-    departureTime = null,
-    arrivalTime   = null
+    currency       = 'USD',
+    airline        = null,
+    airlineIata    = null,
+    flight_number  = null,
+    departureTime  = null,
+    arrivalTime    = null,
+    numStops       = 0,
+    layoverMinutes = 0,
+    baseFare       = null,
+    taxAmount      = null,
+    cabinClass     = 'economy'
   } = priceData;
 
   try {
     const [result] = await pool.query(
       `INSERT INTO price_history
-         (query_id, price, currency, airline, airline_iata, flight_number, departure_time, arrival_time)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [queryId, price, currency, airline, airlineIata, flight_number, departureTime || null, arrivalTime || null]
+         (query_id, price, currency, airline, airline_iata, flight_number,
+          departure_time, arrival_time, num_stops, layover_minutes, base_amount, tax_amount, cabin_class)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        queryId, price, currency, airline, airlineIata, flight_number,
+        departureTime || null, arrivalTime || null,
+        numStops, layoverMinutes, baseFare, taxAmount, cabinClass
+      ]
     );
     return result.insertId;
   } catch (err) {

@@ -50,22 +50,32 @@ CREATE TABLE search_queries (
 -- ============================================
 -- Table: price_history
 -- ============================================
--- Migration for existing databases (run once):
--- ALTER TABLE price_history ADD COLUMN airline_iata CHAR(3) DEFAULT NULL AFTER airline;
--- ALTER TABLE price_history ADD COLUMN departure_time DATETIME DEFAULT NULL AFTER flight_number;
--- ALTER TABLE price_history ADD COLUMN arrival_time   DATETIME DEFAULT NULL AFTER departure_time;
+-- Migrations for existing databases (run once each):
+-- ALTER TABLE price_history ADD COLUMN airline_iata    CHAR(3)       DEFAULT NULL  AFTER airline;
+-- ALTER TABLE price_history ADD COLUMN departure_time  DATETIME      DEFAULT NULL  AFTER flight_number;
+-- ALTER TABLE price_history ADD COLUMN arrival_time    DATETIME      DEFAULT NULL  AFTER departure_time;
+-- ALTER TABLE price_history ADD COLUMN num_stops       TINYINT       NOT NULL DEFAULT 0     AFTER arrival_time;
+-- ALTER TABLE price_history ADD COLUMN layover_minutes SMALLINT      NOT NULL DEFAULT 0     AFTER num_stops;
+-- ALTER TABLE price_history ADD COLUMN base_amount     DECIMAL(10,2) DEFAULT NULL           AFTER layover_minutes;
+-- ALTER TABLE price_history ADD COLUMN tax_amount      DECIMAL(10,2) DEFAULT NULL           AFTER base_amount;
+-- ALTER TABLE price_history ADD COLUMN cabin_class     VARCHAR(50)   NOT NULL DEFAULT 'economy' AFTER tax_amount;
 
 CREATE TABLE price_history (
-  id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  query_id       INT UNSIGNED   NOT NULL,
-  price          DECIMAL(10,2)  NOT NULL,
-  currency       CHAR(3)        NOT NULL DEFAULT 'USD',
-  airline        VARCHAR(100)   DEFAULT NULL,
-  airline_iata   CHAR(3)        DEFAULT NULL,
-  flight_number  VARCHAR(20)    DEFAULT NULL,
-  departure_time DATETIME       DEFAULT NULL,
-  arrival_time   DATETIME       DEFAULT NULL,
-  checked_at     TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  query_id        INT UNSIGNED   NOT NULL,
+  price           DECIMAL(10,2)  NOT NULL,
+  currency        CHAR(3)        NOT NULL DEFAULT 'USD',
+  airline         VARCHAR(100)   DEFAULT NULL,
+  airline_iata    CHAR(3)        DEFAULT NULL,
+  flight_number   VARCHAR(20)    DEFAULT NULL,
+  departure_time  DATETIME       DEFAULT NULL,
+  arrival_time    DATETIME       DEFAULT NULL,
+  num_stops       TINYINT        NOT NULL DEFAULT 0,
+  layover_minutes SMALLINT       NOT NULL DEFAULT 0,
+  base_amount     DECIMAL(10,2)  DEFAULT NULL,
+  tax_amount      DECIMAL(10,2)  DEFAULT NULL,
+  cabin_class     VARCHAR(50)    NOT NULL DEFAULT 'economy',
+  checked_at      TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   CONSTRAINT fk_ph_query
     FOREIGN KEY (query_id) REFERENCES search_queries(id)

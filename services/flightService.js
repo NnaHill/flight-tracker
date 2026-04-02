@@ -1,46 +1,78 @@
 const duffel = require('./duffelClient');
 
-async function searchLowestPrice(origin, destination, departDate, returnDate, adults) {
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function computeLayoverMinutes(segments) {
+  let total = 0;
+  for (let i = 0; i < segments.length - 1; i++) {
+    const arrive = new Date(segments[i].arriving_at).getTime();
+    const depart = new Date(segments[i + 1].departing_at).getTime();
+    total += Math.max(0, Math.round((depart - arrive) / 60000));
+  }
+  return total;
+}
+
+function mapOffer(offer, cabinClass) {
+  const segments = offer.slices[0].segments;
+  const firstSeg = segments[0];
+  const lastSeg  = segments[segments.length - 1];
+
+  return {
+    price:          parseFloat(offer.total_amount),
+    currency:       offer.total_currency,
+    airline:        offer.owner.name,
+    airlineIata:    offer.owner.iata_code,
+    departureTime:  firstSeg.departing_at,
+    arrivalTime:    lastSeg.arriving_at,
+    offerId:        offer.id,
+    numStops:       segments.length - 1,
+    layoverMinutes: computeLayoverMinutes(segments),
+    baseFare:       parseFloat(offer.base_amount ?? offer.total_amount),
+    taxAmount:      parseFloat(offer.tax_amount ?? 0),
+    cabinClass
+  };
+}
+
+// From a price-sorted list, take the top `limit` cheapest per unique airline
+function topPerAirline(sorted, limit) {
+  const byAirline = new Map();
+  for (const r of sorted) {
+    const key = r.airline || r.airlineIata || 'Unknown';
+    if (!byAirline.has(key)) byAirline.set(key, []);
+    if (byAirline.get(key).length < limit) byAirline.get(key).push(r);
+  }
+  return [...byAirline.values()].flat();
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+async function searchLowestPrice(
+  origin, destination, departDate, returnDate, adults,
+  cabinClass = 'economy'
+) {
   try {
-    // Step 1 — Build slices
-    const slices = [
-      { origin, destination, departure_date: departDate }
-    ];
+    const slices = [{ origin, destination, departure_date: departDate }];
     if (returnDate) {
       slices.push({ origin: destination, destination: origin, departure_date: returnDate });
     }
 
-    // Step 2 — Build passengers array
     const passengers = Array.from({ length: adults }, () => ({ type: 'adult' }));
 
-    // Step 3 — Create offer request
     const offerRequest = await duffel.offerRequests.create({
       slices,
       passengers,
-      cabin_class: 'economy',
+      cabin_class: cabinClass,
       return_offers: true
     });
 
-    // Step 4 — Sort offers ascending by price, take top 5
     const offers = offerRequest.data.offers;
     if (!offers || offers.length === 0) return null;
 
-    const sorted = [...offers].sort(
-      (a, b) => parseFloat(a.total_amount) - parseFloat(b.total_amount)
-    );
-    const top5 = sorted.slice(0, 5);
+    const sorted = [...offers]
+      .sort((a, b) => parseFloat(a.total_amount) - parseFloat(b.total_amount))
+      .map(o => mapOffer(o, cabinClass));
 
-    // Step 5 — Return array of simplified objects
-    return top5.map(offer => ({
-      price:         parseFloat(offer.total_amount),
-      currency:      offer.total_currency,
-      airline:       offer.owner.name,
-      airlineIata:   offer.owner.iata_code,
-      departureTime: offer.slices[0].segments[0].departing_at,
-      arrivalTime:   offer.slices[0].segments[0].arriving_at,
-      offerId:       offer.id
-    }));
-
+    return topPerAirline(sorted, 3);
   } catch (err) {
     console.error('flightService error:', err.message);
     if (err.errors) console.error('Duffel errors:', JSON.stringify(err.errors, null, 2));
