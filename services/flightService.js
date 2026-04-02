@@ -72,6 +72,9 @@ async function searchLowestPrice(
       .sort((a, b) => parseFloat(a.total_amount) - parseFloat(b.total_amount))
       .map(o => mapOffer(o, cabinClass));
 
+    const uniqueAirlines = [...new Set(sorted.map(r => r.airline))];
+    console.log(`  Duffel returned ${offers.length} offers across ${uniqueAirlines.length} airline(s): ${uniqueAirlines.join(', ')}`);
+
     return topPerAirline(sorted, 3);
   } catch (err) {
     console.error('flightService error:', err.message);
