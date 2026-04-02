@@ -209,6 +209,11 @@ const FilterService = {
         return (v === undefined || v === null) ? true : f.test(r, v);
       })
     );
+  },
+
+  // Single Responsibility: pure price sort — used by modal to show cheapest first
+  sortByPrice(records) {
+    return [...records].sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
   }
 };
 
@@ -334,6 +339,31 @@ const Renderer = {
       </div>`;
   },
 
+  // Single Responsibility: renders the "all airlines on route" explore panel
+  // Open/Closed: adding airlines requires no changes here — data-driven
+  alternativesPanel(queryId, allAirlines) {
+    if (allAirlines.length === 0) return '';
+    const items = allAirlines.map(a => {
+      const badge = a.substring(0, 2).toUpperCase();
+      return `
+        <button class="alt-airline-btn"
+          data-qid="${queryId}" data-airline="${this.esc(a)}"
+          onclick="openAirlineModal(+this.dataset.qid, this.dataset.airline)"
+          title="View all prices for ${this.esc(a)}">
+          <span class="alt-airline-badge">${this.esc(badge)}</span>
+          <span class="alt-airline-name">${this.esc(a)}</span>
+        </button>`;
+    }).join('');
+    return `
+      <div class="alternatives-panel">
+        <div class="alternatives-header">
+          <span class="alternatives-label">All airlines on this route</span>
+          <span class="alternatives-hint">Tap any to view &amp; filter prices</span>
+        </div>
+        <div class="alternatives-grid">${items}</div>
+      </div>`;
+  },
+
   card(query) {
     const depart = new Date(query.depart_date).toLocaleDateString('en-US',
       { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
@@ -394,7 +424,9 @@ const Renderer = {
 
       <div class="tracker-results" id="results-${query.id}">
         <div class="tracker-no-results">Not yet checked</div>
-      </div>`;
+      </div>
+
+      <div id="alternatives-${query.id}"></div>`;
   },
 
   modalFilters(filterState, maxFees) {
@@ -474,7 +506,7 @@ const ModalController = {
     const records   = this._records();
     const state     = StateManager.get(this._queryId);
     const threshold = state ? parseFloat(state.query.price_threshold) : null;
-    const filtered  = FilterService.applyModal(records, this._filterState);
+    const filtered  = FilterService.sortByPrice(FilterService.applyModal(records, this._filterState));
     const maxFees   = Math.max(0, ...records.map(r => parseFloat(r.tax_amount || 0)));
 
     document.getElementById('modal-filters').innerHTML =
@@ -554,6 +586,14 @@ const CardController = {
 
     this._renderAirlinePicker(queryId, records);
     this.renderGroupedResults(queryId);
+    this._renderAlternativesPanel(queryId, records);
+  },
+
+  // Single Responsibility: renders the alternatives explore panel — separate from picker logic
+  _renderAlternativesPanel(queryId, records) {
+    const el = document.getElementById(`alternatives-${queryId}`);
+    if (!el) return;
+    el.innerHTML = Renderer.alternativesPanel(queryId, GroupService.uniqueAirlines(records));
   },
 
   _renderAirlinePicker(queryId, records) {
